@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <title>Sistem Pengenalan Plat Kendaraan</title>
+    <style>
+      :root {
+        --primary: #2980b9;
+        --primary-hover: #1c5982;
+        --secondary: #2c3e50;
+        --success: #27ae60;
+        --success-hover: #1e8449;
+        --danger: #e74c3c;
+        --gray: #6c757d;
+        --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #f5f7fa;
+      }
+      .file-upload-container {
+        position: relative;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        border: 2px dashed #cbd5e0;
+        border-radius: 10px;
+        background-color: #f8fafc;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .file-upload-label:hover {
+        border-color: #2980b9;
+        background-color: #edf2f7;
+      }
+
+      .file-upload-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #6c757d;
+      }
+
+      .file-upload-text {
+        font-size: 1.1rem;
+        text-align: center;
+      }
+
+      .file-upload-text strong {
+        color: #2980b9;
+        font-weight: 600;
+      }
+
+      .file-upload-container input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      form,
+      .image-container,
+      .ocr-result {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1rem;
+        width: 100%;
+        max-width: 600px;
+      }
+      .image-preview img {
+        width: 100%;
+        height: auto;
+      }
+      .image-preview {
+        margin-top: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      button {
+        background: var(--primary);
+        color: white;
+        padding: 10px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      button:hover {
+        background: var(--primary-hover);
+      }
+      i[data-feather="trash-2"] {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        color: var(--danger);
+        background: rgba(231, 76, 60, 0.1);
+        padding: 6px;
+        border-radius: 50%;
+      }
+      .ocr-result {
+        white-space: pre-wrap;
+      }
+
+      #help-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+      }
+
+      #help-button:hover {
+        background: var(--primary-hover);
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem;
+        }
+
+        form,
+        .image-container,
+        .ocr-result {
+          padding: 1rem;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .file-upload-label {
+          padding: 30px 15px;
+        }
+
+        .file-upload-text {
+          font-size: 1rem;
+        }
+
+        .file-upload-icon {
+          font-size: 2.5rem;
+        }
+
+        button {
+          font-size: 0.95rem;
+          padding: 10px;
+        }
+
+        #threshold-slider {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.5rem;
+          text-align: center;
+        }
+
+        .file-upload-text strong {
+          display: block;
+          font-size: 1rem;
+        }
+
+        .file-upload-label {
+          font-size: 0.95rem;
+        }
+
+        button {
+          font-size: 0.9rem;
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sistem Pengenalan Plat Kendaraan</h1>
+    <a href="/help" id="help-button" title="Bantuan">
+      <i data-feather="help-circle"></i> Help
+    </a>
+
+    <form
+      id="main-form"
+      method="POST"
+      action="/process"
+      enctype="multipart/form-data"
+    >
+      <div class="file-upload-container">
+        <label for="image-input" class="file-upload-label">
+          <div class="file-upload-icon">
+            <i data-feather="upload-cloud"></i>
+          </div>
+          <div class="file-upload-text">
+            <strong>Klik untuk mengunggah gambar</strong><br />
+            atau seret dan lepas file di sini
+          </div>
+          <input
+            type="file"
+            name="image"
+            id="image-input"
+            accept="image/*"
+            required
+          />
+        </label>
+      </div>
+
+      <div
+        id="image-preview-container"
+        class="image-preview"
+        style="display: none"
+      >
+        <img id="preview-img" src="" alt="Preview Gambar" />
+      </div>
+      <div id="slider-section" style="display: none; margin-top: 10px">
+        <label for="threshold-slider"><b>Atur Threshold:</b></label>
+        <input
+          type="range"
+          id="threshold-slider"
+          name="threshold"
+          min="0"
+          max="100"
+          value="50"
+        />
+        <span id="threshold-value">50</span>
+      </div>
+      <div
+        class="image-preview"
+        id="threshold-preview-container"
+        style="display: none"
+      >
+        <img id="threshold-preview-img" src="" alt="Hasil Threshold Preview" />
+      </div>
+      <button type="submit" id="process-button" disabled>
+        <i data-feather="settings"></i> Proses Gambar
+      </button>
+    </form>
+
+    {% if processed_image %}
+    <div class="image-container" id="processed-container">
+      <h2>Gambar Setelah Thresholding</h2>
+      <i data-feather="trash-2" id="delete-image" title="Hapus gambar"></i>
+      <div class="image-preview">
+        <img
+          id="processed-img"
+          src="data:image/png;base64,{{ processed_image }}"
+          alt="Processed Image"
+        />
+      </div>
+    </div>
+    {% endif %} {% if ocr_result %}
+    <div class="ocr-result" id="ocr-result">
+      <h2>Hasil OCR</h2>
+      <p id="ocr-text">{{ ocr_result }}</p>
+    </div>
+    {% endif %} {% if processed_image or ocr_result %}
+    <div id="download-section">
+      <button id="download-all">
+        <i data-feather="download"></i> Unduh Hasil
+      </button>
+    </div>
+    {% endif %}
+
+    <script>
+      feather.replace();
+      const fileInput = document.getElementById("image-input");
+      const previewImage = document.getElementById("preview-img");
+      const thresholdSlider = document.getElementById("threshold-slider");
+      const thresholdValue = document.getElementById("threshold-value");
+      const thresholdPreviewImg = document.getElementById(
+        "threshold-preview-img"
+      );
+      const processButton = document.getElementById("process-button");
+      let uploadedImageFile = null;
+
+      fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          uploadedImageFile = file;
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            document.getElementById("image-preview-container").style.display =
+              "block";
+            document.getElementById("slider-section").style.display = "block";
+            processButton.disabled = false;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      thresholdSlider.addEventListener("input", function () {
+        thresholdValue.textContent = this.value;
+        if (!uploadedImageFile) return;
+        const formData = new FormData();
+        formData.append("image", uploadedImageFile);
+        formData.append("threshold", this.value);
+        fetch("/update_threshold", { method: "POST", body: formData })
+          .then((res) => res.json())
+          .then((data) => {
+            thresholdPreviewImg.src =
+              "data:image/png;base64," + data.processed_image;
+            document.getElementById(
+              "threshold-preview-container"
+            ).style.display = "block";
+          });
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const delBtn = document.getElementById("delete-image");
+        if (delBtn) {
+          delBtn.addEventListener("click", () => {
+            document.getElementById("processed-container")?.remove();
+            document.getElementById("ocr-result")?.remove();
+            document.getElementById("download-section")?.remove();
+          });
+        }
+        const dlBtn = document.getElementById("download-all");
+        if (dlBtn) {
+          dlBtn.addEventListener("click", () => {
+            const zip = new JSZip();
+            const img = document.getElementById("processed-img");
+            if (img?.src.startsWith("data:image")) {
+              zip.file("hasil_threshold.png", img.src.split(",")[1], {
+                base64: true,
+              });
+            }
+            const text = document.getElementById("ocr-text")?.innerText || "";
+            zip.file("hasil_ocr.txt", text);
+            zip
+              .generateAsync({ type: "blob" })
+              .then((content) => saveAs(content, "hasil_pengolahan.zip"));
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

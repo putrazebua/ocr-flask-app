@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Halaman Bantuan</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        background: #f4f4f4;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      h1,
+      h2 {
+        color: #2980b9;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      a {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        color: #fff;
+        background: #2980b9;
+        padding: 10px 20px;
+        border-radius: 5px;
+      }
+      a:hover {
+        background: #1c5982;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Halaman Bantuan</h1>
+
+      <h2>📌 Cara Menggunakan Web</h2>
+      <ul>
+        <li>
+          Klik tombol <b>"Unggah Gambar"</b> untuk memilih gambar plat kendaraan
+          dari komputer Anda.
+        </li>
+        <li>
+          Atur nilai <b>threshold</b> menggunakan slider untuk mengatur tingkat
+          kejelasan gambar hitam-putih.
+        </li>
+        <li>
+          Klik <b>"Proses Gambar"</b> untuk memulai proses OCR (pengenalan
+          teks).
+        </li>
+        <li>
+          Hasil teks dari plat kendaraan akan ditampilkan dan dapat diunduh
+          bersama gambar yang telah diproses.
+        </li>
+      </ul>
+
+      <h2>🧠 Algoritma yang Digunakan</h2>
+      <ul>
+        <li>
+          <b>OpenCV:</b> Untuk memproses gambar ke grayscale dan thresholding
+          (binerisasi).
+        </li>
+        <li><b>Pillow:</b> Untuk manipulasi dan penyimpanan gambar.</li>
+        <li>
+          <b>Pytesseract (OCR):</b> Untuk mengenali karakter dari gambar hasil
+          thresholding.
+        </li>
+        <li>
+          <b>Threshold Slider:</b> Mengubah nilai ambang (threshold) untuk
+          meningkatkan kualitas pembacaan OCR.
+        </li>
+      </ul>
+
+      <h2>🎯 Tujuan dan Fungsi</h2>
+      <ul>
+        <li>
+          Mempermudah ekstraksi teks dari gambar plat kendaraan secara otomatis.
+        </li>
+        <li>Menunjukkan pengaruh nilai threshold terhadap hasil OCR.</li>
+        <li>
+          Digunakan untuk pembelajaran, demonstrasi, atau aplikasi ringan dalam
+          bidang pengenalan karakter (OCR).
+        </li>
+      </ul>
+
+      <a href="{{ url_for('index') }}">⬅ Kembali ke Beranda</a>
+    </div>
+  </body>
+</html>
